@@ -25,41 +25,31 @@ namespace DistributedTaskProcessing
     public class TaskServer : ITaskServer
     {
         // Properties
-        public List<ClientInformation> Clients { get; set; }
-        public bool ClientUpdateReceived { get; private set; }
-
-
-        public TaskServer()
-        {
-            Clients = new List<ClientInformation>();
-        }
+        private Queue<WorkItemMessage> _workItems = null;
+        private List<WorkItemMessage> _workItemsInProgress = new List<WorkItemMessage>();
+        private List<ClientInformation> _clients = new List<ClientInformation>();
+        private bool _clientUpdateReceived = false;
 
 
 
         // Public Methods
         public void DoWork(ITaskProgram program)
         {
-            var workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
-            var inProgress = new List<WorkItemMessage>();
+            _workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
 
-            while (Clients.Count == 0)
-                Thread.Sleep(5000);
+            WaitForClientUpdate(5000);
 
-            while (workItems.Count > 0 && inProgress.Count > 0)
+            while (_workItems.Count > 0 && _workItemsInProgress.Count > 0)
             {
                 var clients = GetAvailableClients();
                 foreach (var client in clients)
                 {
-                    var workItem = workItems.Dequeue();
-                    inProgress.Add(workItem);
-                    client.CurrentWorkItem = workItem;
+                    client.CurrentWorkItem = _workItems.Dequeue();
+                    _workItemsInProgress.Add(client.CurrentWorkItem);
                     TaskServer.SendWork(client, program);
                 }
 
-                while (!ClientUpdateReceived)
-                    Thread.Sleep(100);
-
-                ClientUpdateReceived = false;
+                WaitForClientUpdate(100);
             }
         }
 
@@ -70,7 +60,7 @@ namespace DistributedTaskProcessing
             clientInfo.LastMessageTime = DateTime.Now;
             clientInfo.ClientId = Guid.NewGuid();
 
-            this.Clients.Add(clientInfo);
+            this._clients.Add(clientInfo);
 
             return clientInfo.ClientId;
         }
@@ -79,14 +69,15 @@ namespace DistributedTaskProcessing
         {
             var client = GetClientById(clientId);
             client.IsBusy = false;
+            _workItemsInProgress.Remove(client.CurrentWorkItem);
 
-            ClientUpdateReceived = true;
+            _clientUpdateReceived = true;
         }
 
         public void UnregisterClient(Guid clientId)
         {
             var client = GetClientById(clientId);
-            Clients.Remove(client);
+            _clients.Remove(client);
         }
 
 
@@ -94,17 +85,26 @@ namespace DistributedTaskProcessing
         // Private Methods
         private ClientInformation[] GetAvailableClients()
         {
-            return (from client in Clients
+            return (from client in _clients
                     where !client.IsBusy && client.IsAlive
                     select client).ToArray();
         }
 
         private ClientInformation GetClientById(Guid clientId)
         {
-            return (from client in Clients
+            return (from client in _clients
                     where client.ClientId == clientId
                     select client).FirstOrDefault();
         }
+
+        private void WaitForClientUpdate(int sleepInterval)
+        {
+            while (!_clientUpdateReceived)
+                Thread.Sleep(sleepInterval);
+
+            _clientUpdateReceived = false;
+        }
+
 
 
         // Static Methods
@@ -119,7 +119,7 @@ namespace DistributedTaskProcessing
         }
     }
 
-    
 
-   
+
+
 }
