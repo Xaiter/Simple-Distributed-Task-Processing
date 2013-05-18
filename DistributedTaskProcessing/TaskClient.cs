@@ -5,39 +5,49 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace DistributedTaskProcessing
 {
+    /// <summary>
+    /// Provides functionality for a client to receive work from a server.    
+    /// </summary>
+    public interface ITaskClient
+    {
+        bool HasProgram(string programName);
+        void ReceiveProgram(Stream message);
+        void ExecuteWorkItem(Stream message);
+        bool IsAlive();
+    }
+    
     public class TaskClient : ITaskClient
     {
-        private List<ClientTaskToolset> Programs;
-        public bool HasProgram(ClientTaskToolset program)
+        // Fields
+        private readonly List<ClientTaskProgram> _programs = new List<ClientTaskProgram>();
+
+
+        public bool HasProgram(string programName)
         {
-            foreach (ClientTaskToolset p in Programs)
-            {
-                if (p == program)
-                    return p.IsDownloaded();
-            }
-            return false;
+            var program = GetProgramByName(programName);
+            return program != null && program.IsDownloaded();
         }
 
         public void ReceiveProgram(Stream message)
         {
             var programMessage = DeserializeMessageStream<ProgramMessage>(message);
-            ClientTaskToolset program = new ClientTaskToolset(programMessage.Name);
+            var program = new ClientTaskProgram(programMessage.Name);
 
-            foreach (var assembly in programMessage.Assemblies)
-                File.WriteAllBytes(assembly.FileName, assembly.Data);
-
+            SaveProgram(programMessage);
         }
 
         public void ExecuteWorkItem(Stream message)
         {
             var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);
+            
+            var program = GetProgramByName(workItemMessage.ProgramName);
         }
 
         public bool IsAlive()
@@ -45,19 +55,37 @@ namespace DistributedTaskProcessing
             return true;
         }
 
-        private void SaveProgram(ProgramMessage message)
+
+
+        // Private Methods
+        private ClientTaskProgram GetProgramByName(string programName)
+        {
+            foreach (var p in _programs)
+                if (p.Name == programName)
+                    return p;
+
+            return null;
+        }
+
+
+
+        // Static Methods
+        private static void SaveProgram(ProgramMessage message)
         {
 
         }
 
-        private string[] GetProgramAssemblyPaths(string programName)
+        private static T DeserializeMessageStream<T>(Stream message)
         {
-            return null; //todo
-        }
+            const int READ_BUFFER_SIZE = 81;
+            var buffer = new byte[READ_BUFFER_SIZE];
 
-        private T DeserializeMessageStream<T>(Stream message)
-        {
-            return default(T); // eventually I will do magic here
+            while (message.Read(buffer, 0, READ_BUFFER_SIZE) > 0)
+            {
+
+            }
+
+            return default(T);
         }
     }
 }

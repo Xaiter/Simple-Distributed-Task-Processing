@@ -7,19 +7,25 @@ using System.IO;
 
 namespace DistributedTaskProcessing
 {
-    public class ClientTaskToolset
+    public class ClientTaskProgram
     {
-        public ClientTaskToolset(string programName)
+        // Properties
+        public string Name { get; private set; }
+        public List<string> AssemblyFileNames { get; set; }
+
+
+        // Constructor
+        public ClientTaskProgram(string programName)
         {
             Name = programName;
-            dlls = new List<string>();
+            AssemblyFileNames = new List<string>();
         }
-        public string Name { get; private set; }
-        public List<string> dlls { get; set; }
-
+        
+        
+        // Methods
         public bool IsDownloaded()
         {
-            foreach (string d in dlls)
+            foreach (string d in AssemblyFileNames)
             {
                 if (!File.Exists(d))
                     return false;

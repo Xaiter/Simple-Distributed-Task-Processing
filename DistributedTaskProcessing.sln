@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Windows Desktop
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing", "DistributedTaskProcessing\DistributedTaskProcessing.csproj", "{79A004A7-A4F5-4EA9-80EA-84629AE6124A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing.ConsoleApplication", "DistributedTaskProcessing.ConsoleApplication\DistributedTaskProcessing.ConsoleApplication.csproj", "{03CD6250-18E8-4A81-A935-FA6361B3685C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{79A004A7-A4F5-4EA9-80EA-84629AE6124A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79A004A7-A4F5-4EA9-80EA-84629AE6124A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79A004A7-A4F5-4EA9-80EA-84629AE6124A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
