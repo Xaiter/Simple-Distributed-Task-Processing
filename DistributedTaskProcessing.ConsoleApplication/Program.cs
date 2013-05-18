@@ -15,6 +15,7 @@ namespace DistributedTaskProcessing.ConsoleApplication
             TaskClientService.OpenHost();
             TaskServerService.OpenHost();
 
+            TaskServerService.DoWork(new MockProgram());
         }
     }
 

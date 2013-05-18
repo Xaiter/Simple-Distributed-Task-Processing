@@ -29,11 +29,21 @@ namespace DistributedTaskProcessing
         public bool ClientUpdateReceived { get; private set; }
 
 
+        public TaskServer()
+        {
+            Clients = new List<ClientInformation>();
+        }
+
+
+
         // Public Methods
         public void DoWork(ITaskProgram program)
         {
             var workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
             var inProgress = new List<WorkItemMessage>();
+
+            while (Clients.Count == 0)
+                Thread.Sleep(5000);
 
             while (workItems.Count > 0 && inProgress.Count > 0)
             {
