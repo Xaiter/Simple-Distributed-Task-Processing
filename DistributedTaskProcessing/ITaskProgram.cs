@@ -6,10 +6,24 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DistributedTaskProcessing
 {
+    public static class TaskClientMessenger
+    {
+        public static void SendWork(ClientInformation clientInfo, ITaskProgram program)
+        {
+
+        }
+
+        public static void SendProgram(ClientInformation clientInfo, ITaskProgram program)
+        {
+
+        }
+    }
+
     /// <summary>
     /// A program to be loaded by a TaskServer (probably through a user interface).
     /// </summary>
@@ -25,26 +39,76 @@ namespace DistributedTaskProcessing
     /// </summary>
     public class TaskServer : ITaskServer
     {
+        // Properties
         public List<ClientInformation> Clients { get; set; }
+        public bool ClientUpdateReceived { get; private set; }
 
+
+        // Public Methods
         public void DoWork(ITaskProgram program)
         {
             var workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
+            var inProgress = new List<WorkItemMessage>();
 
+            while (workItems.Count > 0 && inProgress.Count > 0)
+            {
+                var clients = GetAvailableClients();
+                foreach (var client in clients)
+                {
+                    var workItem = workItems.Dequeue();
+                    inProgress.Add(workItem);
+                    client.CurrentWorkItem = workItem;
+                    TaskClientMessenger.SendWork(client, program);
+                }
 
+                while (!ClientUpdateReceived)
+                    Thread.Sleep(100);
+
+                ClientUpdateReceived = false;
+            }
         }
 
-        public void RegisterClient(string endpointUrl)
+        public Guid RegisterClient(string endpointUrl)
         {
             var clientInfo = new ClientInformation();
             clientInfo.EndpointLocation = endpointUrl;
-            clientInfo.LastMessage = DateTime.Now;
+            clientInfo.LastMessageTime = DateTime.Now;
+            clientInfo.ClientId = Guid.NewGuid();
 
+            this.Clients.Add(clientInfo);
+
+            return clientInfo.ClientId;
         }
 
-        public void ReceiveWorkItemUpdate()
+        public void WorkItemComplete(Guid clientId)
         {
-            throw new NotImplementedException();
+            var client = GetClientById(clientId);
+            client.IsBusy = false;
+
+            ClientUpdateReceived = true;
+        }
+
+        public void UnregisterClient(Guid clientId)
+        {
+            var client = GetClientById(clientId);
+            Clients.Remove(client);
+        }
+
+
+
+        // Private Methods
+        private ClientInformation[] GetAvailableClients()
+        {
+            return (from client in Clients
+                    where !client.IsBusy && client.IsAlive
+                    select client).ToArray();
+        }
+
+        private ClientInformation GetClientById(Guid clientId)
+        {
+            return (from client in Clients
+                    where client.ClientId == clientId
+                    select client).FirstOrDefault();
         }
     }
 
@@ -54,8 +118,9 @@ namespace DistributedTaskProcessing
     /// </summary>
     public interface ITaskServer
     {
-        void RegisterClient(string endpointUrl);
-        void ReceiveWorkItemUpdate();
+        Guid RegisterClient(string endpointUrl);
+        void WorkItemComplete(Guid clientId);
+        void UnregisterClient(Guid clientId);
     }
 
     /// <summary>
@@ -63,18 +128,41 @@ namespace DistributedTaskProcessing
     /// </summary>
     public interface ITaskClient
     {
-        bool HasProgram();
+        bool HasProgram(string programName);
         void ReceiveProgram(Stream message);
         void ExecuteWorkItem(Stream message);
         bool IsAlive();
     }
 
+    public class TaskClient : ITaskClient
+    {
+        public void ReceiveProgram(Stream message)
+        {
+            var programMessage = DeserializeMessageStream<ProgramMessage>(message);
+        }
+        
+        public void ExecuteWorkItem(Stream message)
+        {
+            var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);            
+        }
+        
+        private T DeserializeMessageStream<T>(Stream message)
+        {
+            return default(T); // eventually I will do magic here
+        }
+    }
+
+
+
     public class ClientInformation
     {
         // Properties
+        public Guid ClientId { get; set; }
         public string EndpointLocation { get; set; }
-        public DateTime LastMessage { get; set; }
+        public DateTime LastMessageTime { get; set; }
         public bool IsAlive { get; set; }
+        public bool IsBusy { get; set; }
+        public WorkItemMessage CurrentWorkItem { get; set; }
     }
 
     public class WorkItemMessage
@@ -99,6 +187,4 @@ namespace DistributedTaskProcessing
         public string Filename { get; set; }
         public byte[] Data { get; set; }
     }
-
-
 }
