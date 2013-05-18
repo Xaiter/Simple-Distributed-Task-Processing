@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
@@ -108,14 +109,38 @@ namespace DistributedTaskProcessing
 
 
         // Static Methods
-        public static void SendWork(ClientInformation clientInfo, ITaskProgram program)
+        private static void SendWork(ClientInformation clientInfo, ITaskProgram program)
         {
+            var proxy = WcfUtilities.GetServiceProxy<ITaskClient>(clientInfo.EndpointLocation);
 
+            if (!proxy.HasProgram(program.Name))
+                SendProgram(proxy, clientInfo, program);
+
+            SerializeMessageStream(proxy.ExecuteWorkItem, clientInfo.CurrentWorkItem);
         }
 
-        public static void SendProgram(ClientInformation clientInfo, ITaskProgram program)
+        private static void SendProgram(ClientInformation clientInfo, ITaskProgram program)
         {
+            var proxy = WcfUtilities.GetServiceProxy<ITaskClient>(clientInfo.EndpointLocation);
+            SendProgram(proxy, clientInfo, program);
+        }
 
+        private static void SendProgram(ITaskClient proxy, ClientInformation clientInfo, ITaskProgram program)
+        {
+            var programMessage = new ProgramMessage();
+            programMessage.Name = program.Name;
+            programMessage.ProgramFiles = program.GetProgramFiles();
+
+            SerializeMessageStream(proxy.ReceiveProgram, programMessage);
+        }
+
+        private static void SerializeMessageStream(Action<Stream> handler, object message)
+        {
+            var messageBytes = DataUtilities.Serialize(message);
+            messageBytes = DataUtilities.Compress(messageBytes);
+
+            var memoryStream = new MemoryStream(messageBytes);
+            handler.Invoke(memoryStream);
         }
     }
 

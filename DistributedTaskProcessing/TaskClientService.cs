@@ -12,7 +12,8 @@ namespace DistributedTaskProcessing
         // Fields
         private static ServiceHost _serviceHost = null;
         private static TaskClient _serverInstance = null;
-
+        private static string _localTaskClientServiceUri = "net.tcp://localhost:95/TaskClient";
+        private static string _remoteTaskServiceUri = "net.tcp://localhost:95/TaskServer";
 
         static TaskClientService()
         {
@@ -27,7 +28,7 @@ namespace DistributedTaskProcessing
                 _serviceHost.Close();
 
             _serverInstance = new TaskClient();
-            _serviceHost = new ServiceHost(_serverInstance, new Uri("net.tcp://localhost:95/TaskClient"));
+            _serviceHost = new ServiceHost(_serverInstance, new Uri(_localTaskClientServiceUri));
             _serviceHost.Open();
         }
 
@@ -44,6 +45,14 @@ namespace DistributedTaskProcessing
         public static string[] GetProgramAssemblyPaths(string programName)
         {
             return null; //todo
+        }
+
+
+        // Private Methods
+        private static void RegisterClient()
+        {
+            var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(_remoteTaskServiceUri);
+            proxy.RegisterClient(_localTaskClientServiceUri);
         }
     }
 }

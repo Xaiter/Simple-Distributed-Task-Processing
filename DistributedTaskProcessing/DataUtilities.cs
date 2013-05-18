@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -78,7 +79,8 @@ namespace DistributedTaskProcessing
         {
             throw new NotImplementedException();
         }
-        
+
+
         
 
 
@@ -96,6 +98,16 @@ namespace DistributedTaskProcessing
         public static Assembly GetAssembly(this AssemblyName name)
         {
             return Assembly.Load(name);
+        }
+    }
+
+    public static class WcfUtilities
+    {
+        public static T GetServiceProxy<T>(string tcpEndpointUri)
+        {
+            var binding = new NetTcpBinding();
+            var channelFactory = new ChannelFactory<T>(binding, tcpEndpointUri);
+            return channelFactory.CreateChannel();
         }
     }
 }

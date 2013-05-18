@@ -22,7 +22,7 @@ namespace DistributedTaskProcessing
         void ExecuteWorkItem(Stream message);
         bool IsAlive();
     }
-    
+
     public class TaskClient : ITaskClient
     {
         // Fields
@@ -46,8 +46,9 @@ namespace DistributedTaskProcessing
         public void ExecuteWorkItem(Stream message)
         {
             var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);
-            
             var program = GetProgramByName(workItemMessage.ProgramName);
+
+            var executionDomain = AppDomain.CreateDomain(workItemMessage.WorkItemId.ToString());
         }
 
         public bool IsAlive()
@@ -72,12 +73,24 @@ namespace DistributedTaskProcessing
         // Static Methods
         private static void SaveProgram(ProgramMessage message)
         {
+            var p = new ClientTaskProgram(message.Name);
+            p.AssemblyFileNames = (from f in message.ProgramFiles
+                                   select f.Filename).ToList();
 
+            if (Directory.Exists(p.Name))
+                Directory.Delete(p.Name, true);
+            Directory.CreateDirectory(p.Name);
+
+            foreach (var file in message.ProgramFiles)
+            {
+                string path = Path.Combine(p.Name, file.Filename);
+                File.WriteAllBytes(path, file.Data);
+            }
         }
 
         private static T DeserializeMessageStream<T>(Stream message)
         {
-            const int READ_BUFFER_SIZE = 81;
+            const int READ_BUFFER_SIZE = 8192;
             var buffer = new byte[READ_BUFFER_SIZE];
 
             while (message.Read(buffer, 0, READ_BUFFER_SIZE) > 0)

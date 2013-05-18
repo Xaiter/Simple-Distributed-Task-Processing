@@ -12,8 +12,8 @@ namespace DistributedTaskProcessing.ConsoleApplication
     {
         static void Main(string[] args)
         {
-            TaskClientService.OpenHost();
             TaskServerService.OpenHost();
+            TaskClientService.OpenHost();
 
             TaskServerService.DoWork(new MockProgram());
         }

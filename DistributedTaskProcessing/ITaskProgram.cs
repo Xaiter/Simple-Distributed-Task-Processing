@@ -39,6 +39,7 @@ namespace DistributedTaskProcessing
         public string WorkDataType { get; set; }
 
         public string ProgramName { get; set; }
+        public string WorkerAssemblyName { get; set; }
         public string WorkerType { get; set; }
         public string WorkerMethodName { get; set; }
     }
@@ -46,7 +47,7 @@ namespace DistributedTaskProcessing
     public class ProgramMessage
     {
         public string Name { get; set; }
-        public FileData[] Assemblies { get; set; }
+        public FileData[] ProgramFiles { get; set; }
     }
 
     public class FileData
