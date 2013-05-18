@@ -134,25 +134,6 @@ namespace DistributedTaskProcessing
         bool IsAlive();
     }
 
-    public class TaskClient : ITaskClient
-    {
-        public void ReceiveProgram(Stream message)
-        {
-            var programMessage = DeserializeMessageStream<ProgramMessage>(message);
-        }
-        
-        public void ExecuteWorkItem(Stream message)
-        {
-            var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);            
-        }
-        
-        private T DeserializeMessageStream<T>(Stream message)
-        {
-            return default(T); // eventually I will do magic here
-        }
-    }
-
-
 
     public class ClientInformation
     {
