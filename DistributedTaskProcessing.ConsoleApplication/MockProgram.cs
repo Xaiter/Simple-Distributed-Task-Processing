@@ -13,7 +13,7 @@ namespace DistributedTaskProcessing.ConsoleApplication
 
         public FileData[] GetProgramFiles()
         {
-            return new FileData[] { new FileData("bin/Debug/DistributedTaskProcessing.dll") };
+            return new FileData[] { new FileData("DistributedTaskProcessing.dll") };
         }
 
         public WorkItemMessage[] GetWorkItemMessages()

@@ -17,6 +17,7 @@ namespace DistributedTaskProcessing
         // Public Methods
         public void DoWork(ITaskProgram program)
         {
+            Logger.Trace("Starting work for program " + program.ToString());
             _serverInstance.DoWork(program);
         }
 
@@ -27,6 +28,7 @@ namespace DistributedTaskProcessing
             _serverInstance = new TaskServer();
             _serviceHost = new ServiceHost(_serverInstance, new Uri("net.tcp://localhost:95/TaskServer"));
             _serviceHost.Open();
+            Logger.Trace("Opened Task Server Service - net.tcp://localhost:95/TaskServer");
         }
 
         public void CloseHost()

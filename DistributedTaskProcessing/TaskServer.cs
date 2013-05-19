@@ -45,9 +45,13 @@ namespace DistributedTaskProcessing
         {
             _workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
 
-            WaitForClientUpdate();
+            while (_clients.Count == 0)
+            {
+                Logger.Trace("Waiting for clients...");
+                WaitForClientUpdate();
+            }
 
-            while (_workItems.Count > 0 && _workItemsInProgress.Count > 0)
+            while (_workItems.Count > 0 || _workItemsInProgress.Count > 0)
             {
                 var clients = GetAvailableClients();
                 Logger.Trace("Found " + clients.Length + " clients...");
@@ -61,6 +65,8 @@ namespace DistributedTaskProcessing
 
                 WaitForClientUpdate();
             }
+
+            Logger.Trace("Work complete!");
         }
 
         public Guid RegisterClient(string endpointUrl)
@@ -69,8 +75,12 @@ namespace DistributedTaskProcessing
             clientInfo.EndpointLocation = endpointUrl;
             clientInfo.LastMessageTime = DateTime.Now;
             clientInfo.ClientId = Guid.NewGuid();
+            clientInfo.IsAlive = true;
+            clientInfo.IsBusy = false;
 
             this._clients.Add(clientInfo);
+
+            _clientUpdateReceived = true;
 
             return clientInfo.ClientId;
         }
@@ -109,10 +119,12 @@ namespace DistributedTaskProcessing
 
         private void WaitForClientUpdate()
         {
+            Logger.Trace("Waiting for client update...");
             while (!_clientUpdateReceived)
                 Thread.Sleep(1);
 
             _clientUpdateReceived = false;
+            Logger.Trace("Client update received!");
         }
 
 

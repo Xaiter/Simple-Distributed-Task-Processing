@@ -32,6 +32,7 @@ namespace DistributedTaskProcessing
         public WorkItemMessage CurrentWorkItem { get; set; }
     }
 
+    [Serializable]
     public class WorkItemMessage
     {
         public Guid WorkItemId { get; set; }
@@ -63,12 +64,14 @@ namespace DistributedTaskProcessing
         }
     }
 
+    [Serializable]
     public class ProgramMessage
     {
         public string Name { get; set; }
         public FileData[] ProgramFiles { get; set; }
     }
 
+    [Serializable]
     public class FileData
     {
         public string Filename { get; set; }

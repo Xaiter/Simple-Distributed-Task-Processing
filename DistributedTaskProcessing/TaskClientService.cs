@@ -21,10 +21,12 @@ namespace DistributedTaskProcessing
         {
             if (_serviceHost != null)
                 _serviceHost.Close();
-
-            RegisterClient();
+            
             _serviceHost = new ServiceHost(typeof(TaskClient), new Uri(_localTaskClientServiceUri));
             _serviceHost.Open();
+            Logger.Trace("Opened Task Client Service - " + _localTaskClientServiceUri);
+
+            RegisterClient();
         }
 
         public void CloseHost()

@@ -110,14 +110,28 @@ namespace DistributedTaskProcessing
         private static T DeserializeMessageStream<T>(Stream message)
         {
             const int READ_BUFFER_SIZE = 8192;
+            const int MAX_MESSAGE_SIZE = 67108864; // (64[MB] * 1024[KB] * 1024[B]) = 64MB
+
             var buffer = new byte[READ_BUFFER_SIZE];
+            var messageData = new byte[MAX_MESSAGE_SIZE];
+            int messageSize = 0;
+            int readSize = 0;
 
-            while (message.Read(buffer, 0, READ_BUFFER_SIZE) > 0)
+            while (true)
             {
+                readSize = message.Read(buffer, 0, READ_BUFFER_SIZE);
+                if(readSize == 0)
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
 
+                buffer.CopyTo(messageData, readSize);
+                messageSize += readSize;
             }
 
-            return default(T);
+            Array.Resize(ref messageData, messageSize);
+            return DataUtilities.Deserialize<T>(messageData);
         }
     }
 }
