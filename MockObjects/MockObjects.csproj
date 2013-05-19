@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{03CD6250-18E8-4A81-A935-FA6361B3685C}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{CD7DDD79-41C0-4223-ABC7-45DE50827F66}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DistributedTaskProcessing.ConsoleApplication</RootNamespace>
-    <AssemblyName>DistributedTaskProcessing.ConsoleApplication</AssemblyName>
+    <RootNamespace>MockObjects</RootNamespace>
+    <AssemblyName>MockObjects</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -41,20 +39,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="MockProgram.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DistributedTaskProcessing\DistributedTaskProcessing.csproj">
       <Project>{79a004a7-a4f5-4ea9-80ea-84629ae6124a}</Project>
       <Name>DistributedTaskProcessing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MockObjects\MockObjects.csproj">
-      <Project>{cd7ddd79-41c0-4223-abc7-45de50827f66}</Project>
-      <Name>MockObjects</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

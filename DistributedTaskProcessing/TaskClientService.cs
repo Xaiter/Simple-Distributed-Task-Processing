@@ -9,20 +9,23 @@ namespace DistributedTaskProcessing
 {
     public class TaskClientService
     {
+        // Constant
+        private const string LOCAL_TCP_ADDRESS = "net.tcp://localhost:95/";
+
         // Fields
         private ServiceHost _serviceHost = null;
-        private string _localTaskClientServiceUri = "net.tcp://localhost:95/TaskClient";
-        private string _remoteTaskServiceUri = "net.tcp://localhost:95/TaskServer";
+        private string _localTaskClientServiceUri = LOCAL_TCP_ADDRESS + "TaskClient";
+        private string _remoteTaskServiceUri = LOCAL_TCP_ADDRESS + "TaskServer";
         private Guid? _clientId = null;
 
 
         // Public Methods
         public void OpenHost()
         {
-            if (_serviceHost != null)
-                _serviceHost.Close();
-            
-            _serviceHost = new ServiceHost(typeof(TaskClient), new Uri(_localTaskClientServiceUri));
+            CloseHost();
+
+            _serviceHost = new ServiceHost(typeof(TaskClient), new Uri(LOCAL_TCP_ADDRESS));
+            _serviceHost.AddServiceEndpoint(typeof(ITaskClient), WcfUtilities.GetTcpBinding(), "TaskClient");
             _serviceHost.Open();
             Logger.Trace("Opened Task Client Service - " + _localTaskClientServiceUri);
 

@@ -35,11 +35,13 @@ namespace DistributedTaskProcessing
     {
         // Fields
         private readonly List<ClientTaskProgram> _programs = new List<ClientTaskProgram>();
+        private readonly Action<WorkItemMessage, ClientTaskProgram> _asyncHandle = null;
+        private bool _isBusy = false;
 
 
         public TaskClient()
         {
-            
+            _asyncHandle = ExecuteWorkItem;
         }
 
         public bool HasProgram(string programName)
@@ -51,10 +53,7 @@ namespace DistributedTaskProcessing
         public void ReceiveProgram(Stream message)
         {
             Logger.Trace("TaskClient - Receiving program...");
-
             var programMessage = DeserializeMessageStream<ProgramMessage>(message);
-            var program = new ClientTaskProgram(programMessage.Name);
-
             SaveProgram(programMessage);
         }
 
@@ -65,9 +64,12 @@ namespace DistributedTaskProcessing
             var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);
             var program = GetProgramByName(workItemMessage.ProgramName);
 
-            Logger.Trace("Executing work item " + workItemMessage.WorkItemId.ToString());
+            AsyncCallback asyncCallback = (IAsyncResult result) => {
+                _isBusy = false;
+                _asyncHandle.EndInvoke(result);
+            };
 
-            var executionDomain = AppDomain.CreateDomain(workItemMessage.WorkItemId.ToString());
+            _asyncHandle.BeginInvoke(workItemMessage, program, asyncCallback, null);
         }
 
         public bool IsAlive()
@@ -90,6 +92,16 @@ namespace DistributedTaskProcessing
 
 
         // Static Methods
+        private void ExecuteWorkItem(WorkItemMessage message, ClientTaskProgram program)
+        {
+            _isBusy = true;
+            Logger.Trace("Executing work item " + message.WorkItemId.ToString());
+
+            var executionDomain = AppDomain.CreateDomain(message.WorkItemId.ToString());
+            var crossDomainWorkerProxy = executionDomain.CreateInstanceAndUnwrap(message.WorkerAssemblyName, message.WorkerType) as ITaskWorker;
+            crossDomainWorkerProxy.DoWork(message);
+        }
+
         private static void SaveProgram(ProgramMessage message)
         {
             var p = new ClientTaskProgram(message.Name);
@@ -110,28 +122,22 @@ namespace DistributedTaskProcessing
         private static T DeserializeMessageStream<T>(Stream message)
         {
             const int READ_BUFFER_SIZE = 8192;
-            const int MAX_MESSAGE_SIZE = 67108864; // (64[MB] * 1024[KB] * 1024[B]) = 64MB
-
             var buffer = new byte[READ_BUFFER_SIZE];
-            var messageData = new byte[MAX_MESSAGE_SIZE];
+            var messageDataStream = new MemoryStream();
+
             int messageSize = 0;
             int readSize = 0;
 
-            while (true)
+            while ((readSize = message.Read(buffer, 0, READ_BUFFER_SIZE)) > 0)
             {
-                readSize = message.Read(buffer, 0, READ_BUFFER_SIZE);
-                if(readSize == 0)
-                {
-                    Thread.Sleep(10);
-                    continue;
-                }
-
-                buffer.CopyTo(messageData, readSize);
+                messageDataStream.Write(buffer, 0, readSize);
                 messageSize += readSize;
             }
+            message.Close();
+            message.Dispose();
+            message = null;
 
-            Array.Resize(ref messageData, messageSize);
-            return DataUtilities.Deserialize<T>(messageData);
+            return DataUtilities.Deserialize<T>(messageDataStream.ToArray());
         }
     }
 }

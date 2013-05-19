@@ -11,14 +11,4 @@ namespace DistributedTaskProcessing
     {
         object DoWork(WorkItemMessage message);
     }
-
-    public abstract class MockWorker : ITaskWorker
-    {
-        public object DoWork(WorkItemMessage message)
-        {
-            Logger.Trace("MockWorker - DoWork");
-            Thread.Sleep(12000);
-            return null;
-        }
-    }
 }

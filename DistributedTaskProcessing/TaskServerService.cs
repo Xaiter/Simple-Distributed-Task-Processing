@@ -26,7 +26,8 @@ namespace DistributedTaskProcessing
             CloseHost();
 
             _serverInstance = new TaskServer();
-            _serviceHost = new ServiceHost(_serverInstance, new Uri("net.tcp://localhost:95/TaskServer"));
+            _serviceHost = new ServiceHost(_serverInstance, new Uri("net.tcp://localhost:95/"));
+            _serviceHost.AddServiceEndpoint(typeof(ITaskServer), WcfUtilities.GetTcpBinding(), "TaskServer");
             _serviceHost.Open();
             Logger.Trace("Opened Task Server Service - net.tcp://localhost:95/TaskServer");
         }

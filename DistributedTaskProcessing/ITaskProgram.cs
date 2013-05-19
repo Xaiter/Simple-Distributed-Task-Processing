@@ -42,7 +42,6 @@ namespace DistributedTaskProcessing
         public string ProgramName { get; set; }
         public string WorkerAssemblyName { get; set; }
         public string WorkerType { get; set; }
-        public string WorkerMethodName { get; set; }
 
         public void SetWorkData(object data)
         {
@@ -51,11 +50,6 @@ namespace DistributedTaskProcessing
 
             WorkData = DataUtilities.Serialize(data);
             WorkDataType = data.GetType().ToString();
-        }
-
-        public object GetWorkData()
-        {
-            return DataUtilities.Deserialize(WorkData);
         }
 
         public T GetWorkData<T>()

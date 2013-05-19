@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace DistributedTaskProcessing
 {
@@ -19,49 +20,57 @@ namespace DistributedTaskProcessing
         // Public Methods
         public static byte[] Serialize(object value)
         {
-            var formatter = new BinaryFormatter();
+            var serializer = new XmlSerializer(value.GetType());            
             var ms = new MemoryStream();
 
-            formatter.Serialize(ms, value);
-            return ms.ToArray();
+            serializer.Serialize(ms, value);
+            
+            var data = ms.ToArray();
+            File.WriteAllBytes("C:\\test\\Serialize.xml", data);
+            return data;
         }
 
-        public static object Deserialize(byte[] data)
+        public static object Deserialize(byte[] data, Type type)
         {
-            var formatter = new BinaryFormatter();
+            var serializer = new XmlSerializer(type);
             var ms = new MemoryStream(data);
-            return formatter.Deserialize(ms);
+            File.WriteAllBytes("C:\\test\\Deserialize.xml", data);
+            return serializer.Deserialize(ms);
         }
 
         public static T Deserialize<T>(byte[] data)
         {
-            return (T)Deserialize(data);
+            return (T)Deserialize(data, typeof(T));
         }
 
         public static byte[] Compress(byte[] bytes)
         {
-            byte[] retValue;
+            byte[] returnValue;
+
             using (MemoryStream stream = new MemoryStream())
             {
                 using (GZipStream zipStream = new GZipStream(stream, CompressionMode.Compress, true))
                 {
                     zipStream.Write(bytes, 0, bytes.Length);
-                    retValue = stream.ToArray();
                     zipStream.Close();
-                    stream.Close();
                 }
+
+                returnValue = stream.ToArray();
+                stream.Close();
             }
-            return retValue;
+
+            return returnValue;
         }
 
         public static byte[] Decompress(byte[] bytes)
         {
-            byte[] retValue;
+            
             using (MemoryStream stream = new MemoryStream())
             {
-                using (GZipStream zipStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress, true))
+                var ms = new MemoryStream(bytes);
+                using (GZipStream zipStream = new GZipStream(ms, CompressionMode.Decompress, true))
                 {
-                    byte[] buffer = new byte[4096];
+                    byte[] buffer = new byte[8192];
                     int size;
                     while (true)
                     {
@@ -72,7 +81,7 @@ namespace DistributedTaskProcessing
                             break;
                     }
                     zipStream.Close();
-                    retValue = stream.ToArray();
+                    byte[] retValue = stream.ToArray();
                     stream.Dispose();
                     zipStream.Dispose();
                     return retValue;
@@ -85,8 +94,6 @@ namespace DistributedTaskProcessing
             throw new NotImplementedException();
         }
 
-
-        
 
 
         // Private Methods
@@ -110,9 +117,16 @@ namespace DistributedTaskProcessing
     {
         public static T GetServiceProxy<T>(string tcpEndpointUri)
         {
-            var binding = new NetTcpBinding();
-            var channelFactory = new ChannelFactory<T>(binding, tcpEndpointUri);
+            var channelFactory = new ChannelFactory<T>(GetTcpBinding(), tcpEndpointUri);
             return channelFactory.CreateChannel();
+        }
+
+        public static NetTcpBinding GetTcpBinding()
+        {
+            var binding = new NetTcpBinding();
+            binding.TransferMode = TransferMode.Streamed;
+            binding.MaxReceivedMessageSize = 134217728;
+            return binding;
         }
     }
 }

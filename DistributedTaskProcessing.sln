@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing.ConsoleApplication", "DistributedTaskProcessing.ConsoleApplication\DistributedTaskProcessing.ConsoleApplication.csproj", "{03CD6250-18E8-4A81-A935-FA6361B3685C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MockObjects", "MockObjects\MockObjects.csproj", "{CD7DDD79-41C0-4223-ABC7-45DE50827F66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03CD6250-18E8-4A81-A935-FA6361B3685C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

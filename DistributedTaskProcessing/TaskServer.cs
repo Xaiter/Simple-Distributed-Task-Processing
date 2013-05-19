@@ -158,7 +158,8 @@ namespace DistributedTaskProcessing
         private static void SerializeMessageStream(Action<Stream> handler, object message)
         {
             var messageBytes = DataUtilities.Serialize(message);
-            messageBytes = DataUtilities.Compress(messageBytes);
+            object testObject = DataUtilities.Deserialize(messageBytes, message.GetType());
+            //messageBytes = DataUtilities.Compress(messageBytes);
 
             var memoryStream = new MemoryStream(messageBytes);
             handler.Invoke(memoryStream);
