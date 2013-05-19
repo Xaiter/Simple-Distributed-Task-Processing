@@ -43,6 +43,7 @@ namespace MockObjects
         {
             Logger.Trace("MockWorker - DoWork");
             Thread.Sleep(12000);
+            Logger.Trace("MockWorker - DoWork complete!");
             return null;
         }
     }

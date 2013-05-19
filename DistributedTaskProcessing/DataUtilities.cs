@@ -130,17 +130,11 @@ namespace DistributedTaskProcessing
             return binding;
         }
 
-        public static ServiceEndpoint CreateServiceEndpoint(string address, Type endpointInstanceType)
+        public static ServiceHost CreateServiceHost(string address, Type contractType, Type endpointInstanceType)
         {
-            return CreateServiceEndpoint(address, endpointInstanceType.ToString()); // because I am literally this lazy
-        }
-
-        public static ServiceEndpoint CreateServiceEndpoint(string address, string endpointInstanceType)
-        {
-            var sp = new ServiceEndpoint(new ContractDescription(endpointInstanceType));
-            sp.Address = new EndpointAddress(address);
-            sp.Binding = WcfUtilities.GetTcpBinding();
-            return sp;
+            var host = new ServiceHost(endpointInstanceType, new Uri(address));
+            host.AddServiceEndpoint(contractType, GetTcpBinding(), address);
+            return host;
         }
 
         public static ProxyResult InvokeWcfProxyMethod(Delegate method, params object[] arguments)
@@ -157,6 +151,7 @@ namespace DistributedTaskProcessing
                 {
                     result.ReturnValue = method.DynamicInvoke(arguments);
                     result.Success = true;
+                    break;
                 }
                 catch (TimeoutException ex)
                 {
@@ -168,6 +163,12 @@ namespace DistributedTaskProcessing
                     result.LastException = ex;
                     Logger.Exception("Exception invoking " + method.Method.Name + " on " + method.Target.GetType().ToString(), ex);
                 }
+                catch (Exception ex)
+                {
+                    Logger.Exception(null, ex);
+                    throw;
+                }
+
             }
             
             result.FailCount = retryCount;

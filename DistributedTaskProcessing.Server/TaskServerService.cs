@@ -28,7 +28,7 @@ namespace DistributedTaskProcessing.Server
 
             _serverInstance = new TaskServer();
             _serviceHost = new ServiceHost(_serverInstance, new Uri(Settings.Default.TcpAddress));
-            _serviceHost.AddServiceEndpoint(typeof(ITaskServer), WcfUtilities.GetTcpBinding(), "Server");
+            _serviceHost.AddServiceEndpoint(typeof(ITaskServer), WcfUtilities.GetTcpBinding(), Settings.Default.TcpAddress);
             _serviceHost.Open();
             Logger.Trace("Opened Task Server Service");
         }

@@ -15,7 +15,8 @@ namespace DistributedTaskProcessing
 
         public static void Exception(string message, Exception ex)
         {
-
+            Console.WriteLine(message);
+            Console.WriteLine(ex.ToString());
         }
     }
 }

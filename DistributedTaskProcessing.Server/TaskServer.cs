@@ -16,7 +16,6 @@ namespace DistributedTaskProcessing.Server
     public class TaskServer : ITaskServer
     {
         // Properties
-        private Queue<WorkItemMessage> _workItems = null;
         private List<WorkItemMessage> _workItemsInProgress = new List<WorkItemMessage>();
         private List<ClientInformation> _clients = new List<ClientInformation>();
         private bool _clientUpdateReceived = false;
@@ -26,7 +25,7 @@ namespace DistributedTaskProcessing.Server
         // Public Methods
         public void DoWork(ITaskProgram program)
         {
-            _workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
+            var workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
 
             while (_clients.Count == 0)
             {
@@ -34,13 +33,20 @@ namespace DistributedTaskProcessing.Server
                 WaitForClientUpdate();
             }
 
-            while (_workItems.Count > 0 || _workItemsInProgress.Count > 0)
+            while (workItems.Count > 0 || _workItemsInProgress.Count > 0)
             {
+                if (workItems.Count == 0)
+                {
+                    Logger.Trace(string.Concat("Work queue empty. ", _workItemsInProgress.Count, " items in progress."));
+                    WaitForClientUpdate();
+                    continue;
+                }
+
                 var clients = GetAvailableClients();
-                Logger.Trace("Found " + clients.Length + " clients...");
+                Logger.Trace("Found " + clients.Length + " clients available for work...");
                 foreach (var client in clients)
                 {                    
-                    client.CurrentWorkItem = _workItems.Dequeue();
+                    client.CurrentWorkItem = workItems.Dequeue();
                     Logger.Trace("Sending work item " + client.CurrentWorkItem.WorkItemId + " to " + client.ClientId.ToString());
                     _workItemsInProgress.Add(client.CurrentWorkItem);
                     TaskServer.SendWork(client, program);

@@ -16,6 +16,7 @@ namespace DistributedTaskProcessing.Client
     /// <summary>
     /// Provides functionality for a client to receive work from a server.    
     /// </summary>
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class TaskClient : ITaskClient
     {
         // Fields
@@ -24,11 +25,22 @@ namespace DistributedTaskProcessing.Client
         private bool _isBusy = false;
 
 
+        // Properties
+        public Guid? ClientId
+        {
+            get; set;
+        }
+
+
+        // Constructors
         public TaskClient()
         {
             _asyncHandle = ExecuteWorkItem;
         }
 
+
+
+        // Methods
         public bool HasProgram(string programName)
         {
             var program = GetProgramByName(programName);
@@ -52,6 +64,7 @@ namespace DistributedTaskProcessing.Client
             AsyncCallback asyncCallback = (IAsyncResult result) => {
                 _isBusy = false;
                 _asyncHandle.EndInvoke(result);
+                TaskClientService.WorkItemComplete(this.ClientId.Value);
             };
 
             _asyncHandle.BeginInvoke(workItemMessage, program, asyncCallback, null);
