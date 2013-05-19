@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace DistributedTaskProcessing.Server
 {
-
-
     /// <summary>
     /// Accepts work from ITaskPrograms and distributes it to ITaskClients.
     /// </summary>
@@ -150,8 +148,5 @@ namespace DistributedTaskProcessing.Server
             handler.Invoke(memoryStream);
         }
     }
-
-
-
 
 }

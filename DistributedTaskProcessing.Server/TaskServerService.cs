@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DistributedTaskProcessing.Server.Properties;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -26,10 +27,10 @@ namespace DistributedTaskProcessing.Server
             CloseHost();
 
             _serverInstance = new TaskServer();
-            _serviceHost = new ServiceHost(_serverInstance, new Uri("net.tcp://localhost:95/"));
-            _serviceHost.AddServiceEndpoint(typeof(ITaskServer), WcfUtilities.GetTcpBinding(), "TaskServer");
+            _serviceHost = new ServiceHost(_serverInstance, new Uri(Settings.Default.TcpAddress));
+            _serviceHost.AddServiceEndpoint(typeof(ITaskServer), WcfUtilities.GetTcpBinding(), "Server");
             _serviceHost.Open();
-            Logger.Trace("Opened Task Server Service - net.tcp://localhost:95/TaskServer");
+            Logger.Trace("Opened Task Server Service");
         }
 
         public void CloseHost()

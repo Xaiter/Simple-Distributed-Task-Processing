@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -20,11 +21,11 @@ namespace DistributedTaskProcessing
         // Public Methods
         public static byte[] Serialize(object value)
         {
-            var serializer = new XmlSerializer(value.GetType());            
+            var serializer = new XmlSerializer(value.GetType());
             var ms = new MemoryStream();
 
             serializer.Serialize(ms, value);
-            
+
             var data = ms.ToArray();
             File.WriteAllBytes("C:\\test\\Serialize.xml", data);
             return data;
@@ -64,7 +65,7 @@ namespace DistributedTaskProcessing
 
         public static byte[] Decompress(byte[] bytes)
         {
-            
+
             using (MemoryStream stream = new MemoryStream())
             {
                 var ms = new MemoryStream(bytes);
@@ -128,5 +129,58 @@ namespace DistributedTaskProcessing
             binding.MaxReceivedMessageSize = 134217728;
             return binding;
         }
+
+        public static ServiceEndpoint CreateServiceEndpoint(string address, Type endpointInstanceType)
+        {
+            return CreateServiceEndpoint(address, endpointInstanceType.ToString()); // because I am literally this lazy
+        }
+
+        public static ServiceEndpoint CreateServiceEndpoint(string address, string endpointInstanceType)
+        {
+            var sp = new ServiceEndpoint(new ContractDescription(endpointInstanceType));
+            sp.Address = new EndpointAddress(address);
+            sp.Binding = WcfUtilities.GetTcpBinding();
+            return sp;
+        }
+
+        public static ProxyResult InvokeWcfProxyMethod(Delegate method, params object[] arguments)
+        {
+            const int MAX_TRIES = 3;
+
+            var result = new ProxyResult();
+            result.Success = false;
+
+            int retryCount;
+            for (retryCount = 0; retryCount < MAX_TRIES; retryCount++)
+            {
+                try
+                {
+                    result.ReturnValue = method.DynamicInvoke(arguments);
+                    result.Success = true;
+                }
+                catch (TimeoutException ex)
+                {
+                    result.LastException = ex;
+                    Logger.Exception("Timeout invoking " + method.Method.Name + " on " + method.Target.GetType().ToString(), ex);
+                }
+                catch (CommunicationException ex)
+                {
+                    result.LastException = ex;
+                    Logger.Exception("Exception invoking " + method.Method.Name + " on " + method.Target.GetType().ToString(), ex);
+                }
+            }
+            
+            result.FailCount = retryCount;
+
+            return result;
+        }
+    }
+
+    public class ProxyResult
+    {
+        public object ReturnValue { get; set; }
+        public int FailCount{ get; set; }
+        public Exception LastException { get; set; }
+        public bool Success { get; set; }
     }
 }

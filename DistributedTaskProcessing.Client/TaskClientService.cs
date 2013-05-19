@@ -1,8 +1,10 @@
 ﻿using DistributedTaskProcessing.Client;
+using DistributedTaskProcessing.Client.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,9 +16,8 @@ namespace DistributedTaskProcessing.Client
         private const string LOCAL_TCP_ADDRESS = "net.tcp://localhost:95/";
 
         // Fields
+        private ServiceEndpoint _currentEndpoint = null;
         private ServiceHost _serviceHost = null;
-        private string _localTaskClientServiceUri = LOCAL_TCP_ADDRESS + "TaskClient";
-        private string _remoteTaskServiceUri = LOCAL_TCP_ADDRESS + "TaskServer";
         private Guid? _clientId = null;
 
 
@@ -25,13 +26,17 @@ namespace DistributedTaskProcessing.Client
         {
             CloseHost();
 
-            _serviceHost = new ServiceHost(typeof(TaskClient), new Uri(LOCAL_TCP_ADDRESS));
-            _serviceHost.AddServiceEndpoint(typeof(ITaskClient), WcfUtilities.GetTcpBinding(), "TaskClient");
+
+            _currentEndpoint = WcfUtilities.CreateServiceEndpoint(Settings.Default.TcpAddress, typeof(TaskClient));
+            _serviceHost = new ServiceHost(typeof(TaskClient), new Uri(Settings.Default.TcpAddress));
+            _serviceHost.AddServiceEndpoint(_currentEndpoint);
             _serviceHost.Open();
-            Logger.Trace("Opened Task Client Service - " + _localTaskClientServiceUri);
+            Logger.Trace("Opened Task Client Service");
 
             RegisterClient();
         }
+
+
 
         public void CloseHost()
         {
@@ -40,6 +45,7 @@ namespace DistributedTaskProcessing.Client
 
             _serviceHost.Close();
             _serviceHost = null;
+            _currentEndpoint = null;
         }
 
         public string[] GetProgramAssemblyPaths(string programName)
@@ -53,10 +59,34 @@ namespace DistributedTaskProcessing.Client
         {
             Logger.Trace("Registering client with server...");
 
-            var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(_remoteTaskServiceUri);
-            _clientId = proxy.RegisterClient(_localTaskClientServiceUri);
 
-            Logger.Trace("Registered! Assigned Client Id " + _clientId.ToString());
+            var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(Settings.Default.ServerTcpAddress);
+            var result = WcfUtilities.InvokeWcfProxyMethod((Func<string, Guid>)proxy.RegisterClient, _currentEndpoint.Address.Uri.ToString());
+
+            if (!result.Success)
+            {
+                Logger.Trace("Failed to register with server at " + Settings.Default.ServerTcpAddress);
+                return;
+            }
+
+            _clientId = (Guid)result.ReturnValue;
+
+            Logger.Trace("Registered! Assigned Client Id " + _clientId.Value.ToString());
+        }
+
+        private bool UnregisterClient()
+        {
+            Logger.Trace("Unregisting Client Id " + _clientId.ToString());
+
+            var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(Settings.Default.ServerTcpAddress);
+            var result = WcfUtilities.InvokeWcfProxyMethod((Action<Guid>)proxy.UnregisterClient, _clientId.Value);
+
+            if(result.Success)
+                Logger.Trace("Unregistered client with server!");
+            else
+                Logger.Trace("Failed to unregister client with server!");
+
+            return result.Success;
         }
     }
 }

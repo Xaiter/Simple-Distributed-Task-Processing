@@ -12,5 +12,10 @@ namespace DistributedTaskProcessing
         {
             Console.WriteLine(message);
         }
+
+        public static void Exception(string message, Exception ex)
+        {
+
+        }
     }
 }
