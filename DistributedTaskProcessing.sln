@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MockObjects", "MockObjects\MockObjects.csproj", "{CD7DDD79-41C0-4223-ABC7-45DE50827F66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing.Client", "DistributedTaskProcessing.Client\DistributedTaskProcessing.Client.csproj", "{B8E2690A-5545-42F1-BEC8-5D525A597ACB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DistributedTaskProcessing.Server", "DistributedTaskProcessing.Server\DistributedTaskProcessing.Server.csproj", "{01968500-914E-4C37-BDFF-B310E6994C71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD7DDD79-41C0-4223-ABC7-45DE50827F66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8E2690A-5545-42F1-BEC8-5D525A597ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8E2690A-5545-42F1-BEC8-5D525A597ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8E2690A-5545-42F1-BEC8-5D525A597ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8E2690A-5545-42F1-BEC8-5D525A597ACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01968500-914E-4C37-BDFF-B310E6994C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01968500-914E-4C37-BDFF-B310E6994C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01968500-914E-4C37-BDFF-B310E6994C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01968500-914E-4C37-BDFF-B310E6994C71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

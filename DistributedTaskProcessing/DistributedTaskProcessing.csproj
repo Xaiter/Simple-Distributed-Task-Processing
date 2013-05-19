@@ -41,15 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientTaskProgram.cs" />
+    <Compile Include="ITaskClient.cs" />
     <Compile Include="ITaskProgram.cs" />
     <Compile Include="DataUtilities.cs" />
+    <Compile Include="ITaskServer.cs" />
     <Compile Include="ITaskWorker.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TaskClient.cs" />
-    <Compile Include="TaskClientService.cs" />
-    <Compile Include="TaskServer.cs" />
-    <Compile Include="TaskServerService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

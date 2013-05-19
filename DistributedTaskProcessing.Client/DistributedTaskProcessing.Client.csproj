@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{03CD6250-18E8-4A81-A935-FA6361B3685C}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{B8E2690A-5545-42F1-BEC8-5D525A597ACB}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DistributedTaskProcessing.ConsoleApplication</RootNamespace>
-    <AssemblyName>DistributedTaskProcessing.ConsoleApplication</AssemblyName>
+    <RootNamespace>DistributedTaskProcessing.Client</RootNamespace>
+    <AssemblyName>DistributedTaskProcessing.Client</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,28 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskClient.cs" />
+    <Compile Include="TaskClientService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DistributedTaskProcessing.Client\DistributedTaskProcessing.Client.csproj">
-      <Project>{b8e2690a-5545-42f1-bec8-5d525a597acb}</Project>
-      <Name>DistributedTaskProcessing.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DistributedTaskProcessing.Server\DistributedTaskProcessing.Server.csproj">
-      <Project>{01968500-914e-4c37-bdff-b310e6994c71}</Project>
-      <Name>DistributedTaskProcessing.Server</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DistributedTaskProcessing\DistributedTaskProcessing.csproj">
       <Project>{79a004a7-a4f5-4ea9-80ea-84629ae6124a}</Project>
       <Name>DistributedTaskProcessing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MockObjects\MockObjects.csproj">
-      <Project>{cd7ddd79-41c0-4223-abc7-45de50827f66}</Project>
-      <Name>MockObjects</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -9,28 +9,13 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DistributedTaskProcessing;
 
-namespace DistributedTaskProcessing
+namespace DistributedTaskProcessing.Client
 {
     /// <summary>
     /// Provides functionality for a client to receive work from a server.    
     /// </summary>
-    [ServiceContract]
-    public interface ITaskClient
-    {
-        [OperationContract]
-        bool HasProgram(string programName);
-
-        [OperationContract]
-        void ReceiveProgram(Stream message);
-
-        [OperationContract]
-        void ExecuteWorkItem(Stream message);
-
-        [OperationContract]
-        bool IsAlive();
-    }
-
     public class TaskClient : ITaskClient
     {
         // Fields

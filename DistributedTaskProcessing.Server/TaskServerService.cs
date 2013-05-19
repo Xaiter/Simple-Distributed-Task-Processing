@@ -5,7 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DistributedTaskProcessing
+namespace DistributedTaskProcessing.Server
 {
     public class TaskServerService
     {

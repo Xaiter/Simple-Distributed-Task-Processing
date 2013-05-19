@@ -7,6 +7,8 @@ using DistributedTaskProcessing;
 using System.Reflection;
 using System.Threading;
 using MockObjects;
+using DistributedTaskProcessing.Server;
+using DistributedTaskProcessing.Client;
 
 namespace DistributedTaskProcessing.ConsoleApplication
 {
