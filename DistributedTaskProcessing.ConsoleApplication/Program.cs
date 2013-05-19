@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DistributedTaskProcessing;
 using System.Reflection;
+using System.Threading;
 
 namespace DistributedTaskProcessing.ConsoleApplication
 {
@@ -12,10 +13,32 @@ namespace DistributedTaskProcessing.ConsoleApplication
     {
         static void Main(string[] args)
         {
-            TaskServerService.OpenHost();
-            TaskClientService.OpenHost();
+            var serverThread = new Thread(ServerMain);
+            serverThread.Start();
+            
+            var clientThread = new Thread(ClientMain);
+            clientThread.Start();
+        }
 
-            TaskServerService.DoWork(new MockProgram());
+        static void ServerMain()
+        {
+            var serverService = new TaskServerService();
+            serverService.OpenHost();
+
+            serverService.DoWork(new MockProgram());
+
+            while (true)
+                Thread.Sleep(1);
+        }
+
+
+        static void ClientMain()
+        {
+            var clientService = new TaskClientService();
+            clientService.OpenHost();
+
+            while (true)
+                Thread.Sleep(1);
         }
     }
 

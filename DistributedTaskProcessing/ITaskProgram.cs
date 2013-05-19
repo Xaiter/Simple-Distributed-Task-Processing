@@ -42,6 +42,25 @@ namespace DistributedTaskProcessing
         public string WorkerAssemblyName { get; set; }
         public string WorkerType { get; set; }
         public string WorkerMethodName { get; set; }
+
+        public void SetWorkData(object data)
+        {
+            // yeah, I am totally not going to propogate generics
+            // the friggin' way up tonight, nope.
+
+            WorkData = DataUtilities.Serialize(data);
+            WorkDataType = data.GetType().ToString();
+        }
+
+        public object GetWorkData()
+        {
+            return DataUtilities.Deserialize(WorkData);
+        }
+
+        public T GetWorkData<T>()
+        {
+            return DataUtilities.Deserialize<T>(WorkData);
+        }
     }
 
     public class ProgramMessage

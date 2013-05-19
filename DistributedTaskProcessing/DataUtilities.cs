@@ -26,11 +26,16 @@ namespace DistributedTaskProcessing
             return ms.ToArray();
         }
 
-        public static T Deserialize<T>(byte[] data)
+        public static object Deserialize(byte[] data)
         {
             var formatter = new BinaryFormatter();
             var ms = new MemoryStream(data);
-            return (T)formatter.Deserialize(ms);
+            return formatter.Deserialize(ms);
+        }
+
+        public static T Deserialize<T>(byte[] data)
+        {
+            return (T)Deserialize(data);
         }
 
         public static byte[] Compress(byte[] bytes)

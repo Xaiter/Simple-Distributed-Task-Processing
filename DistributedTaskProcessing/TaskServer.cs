@@ -12,17 +12,24 @@ namespace DistributedTaskProcessing
     /// <summary>
     /// Providers functionality to add reigster workers
     /// and receive work progress updates.
-    /// </summary>
+    /// </summary>    
+    [ServiceContract]
     public interface ITaskServer
     {
+        [OperationContract]
         Guid RegisterClient(string endpointUrl);
+        
+        [OperationContract]
         void WorkItemComplete(Guid clientId);
+        
+        [OperationContract]
         void UnregisterClient(Guid clientId);
     }
 
     /// <summary>
     /// Accepts work from ITaskPrograms and distributes it to ITaskClients.
     /// </summary>
+    [ServiceBehavior(InstanceContextMode=InstanceContextMode.Single)]
     public class TaskServer : ITaskServer
     {
         // Properties
@@ -38,19 +45,21 @@ namespace DistributedTaskProcessing
         {
             _workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
 
-            WaitForClientUpdate(5000);
+            WaitForClientUpdate();
 
             while (_workItems.Count > 0 && _workItemsInProgress.Count > 0)
             {
                 var clients = GetAvailableClients();
+                Logger.Trace("Found " + clients.Length + " clients...");
                 foreach (var client in clients)
-                {
+                {                    
                     client.CurrentWorkItem = _workItems.Dequeue();
+                    Logger.Trace("Sending work item " + client.CurrentWorkItem.WorkItemId + " to " + client.ClientId.ToString());
                     _workItemsInProgress.Add(client.CurrentWorkItem);
                     TaskServer.SendWork(client, program);
                 }
 
-                WaitForClientUpdate(100);
+                WaitForClientUpdate();
             }
         }
 
@@ -98,10 +107,10 @@ namespace DistributedTaskProcessing
                     select client).FirstOrDefault();
         }
 
-        private void WaitForClientUpdate(int sleepInterval)
+        private void WaitForClientUpdate()
         {
             while (!_clientUpdateReceived)
-                Thread.Sleep(sleepInterval);
+                Thread.Sleep(1);
 
             _clientUpdateReceived = false;
         }

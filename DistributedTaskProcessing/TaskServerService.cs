@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 
 namespace DistributedTaskProcessing
 {
-    public static class TaskServerService
+    public class TaskServerService
     {
         // Fields
-        private static ServiceHost _serviceHost = null;
-        private static TaskServer _serverInstance = new TaskServer();
+        private ServiceHost _serviceHost = null;
+        private TaskServer _serverInstance = null;
 
 
         // Public Methods
-        public static void DoWork(ITaskProgram program)
+        public void DoWork(ITaskProgram program)
         {
             _serverInstance.DoWork(program);
         }
 
-        public static void OpenHost()
+        public void OpenHost()
         {
             CloseHost();
 
@@ -29,7 +29,7 @@ namespace DistributedTaskProcessing
             _serviceHost.Open();
         }
 
-        public static void CloseHost()
+        public void CloseHost()
         {
             if (_serviceHost == null)
                 return;
@@ -38,5 +38,6 @@ namespace DistributedTaskProcessing
             _serviceHost = null;
             _serverInstance = null;
         }
+
     }
 }

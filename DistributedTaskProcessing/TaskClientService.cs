@@ -7,52 +7,50 @@ using System.Threading.Tasks;
 
 namespace DistributedTaskProcessing
 {
-    public static class TaskClientService
+    public class TaskClientService
     {
         // Fields
-        private static ServiceHost _serviceHost = null;
-        private static TaskClient _serverInstance = null;
-        private static string _localTaskClientServiceUri = "net.tcp://localhost:95/TaskClient";
-        private static string _remoteTaskServiceUri = "net.tcp://localhost:95/TaskServer";
-
-        static TaskClientService()
-        {
-
-        }
+        private ServiceHost _serviceHost = null;
+        private string _localTaskClientServiceUri = "net.tcp://localhost:95/TaskClient";
+        private string _remoteTaskServiceUri = "net.tcp://localhost:95/TaskServer";
+        private Guid? _clientId = null;
 
 
         // Public Methods
-        public static void OpenHost()
+        public void OpenHost()
         {
             if (_serviceHost != null)
                 _serviceHost.Close();
 
-            _serverInstance = new TaskClient();
-            _serviceHost = new ServiceHost(_serverInstance, new Uri(_localTaskClientServiceUri));
+            RegisterClient();
+            _serviceHost = new ServiceHost(typeof(TaskClient), new Uri(_localTaskClientServiceUri));
             _serviceHost.Open();
         }
 
-        public static void CloseHost()
+        public void CloseHost()
         {
-            if (_serverInstance == null)
+            if (_serviceHost == null)
                 return;
 
             _serviceHost.Close();
             _serviceHost = null;
-            _serverInstance = null;
         }
 
-        public static string[] GetProgramAssemblyPaths(string programName)
+        public string[] GetProgramAssemblyPaths(string programName)
         {
             return null; //todo
         }
 
 
         // Private Methods
-        private static void RegisterClient()
+        private void RegisterClient()
         {
+            Logger.Trace("Registering client with server...");
+
             var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(_remoteTaskServiceUri);
-            proxy.RegisterClient(_localTaskClientServiceUri);
+            _clientId = proxy.RegisterClient(_localTaskClientServiceUri);
+
+            Logger.Trace("Registered! Assigned Client Id " + _clientId.ToString());
         }
     }
 }

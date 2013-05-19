@@ -15,11 +15,19 @@ namespace DistributedTaskProcessing
     /// <summary>
     /// Provides functionality for a client to receive work from a server.    
     /// </summary>
+    [ServiceContract]
     public interface ITaskClient
     {
+        [OperationContract]
         bool HasProgram(string programName);
+
+        [OperationContract]
         void ReceiveProgram(Stream message);
+
+        [OperationContract]
         void ExecuteWorkItem(Stream message);
+
+        [OperationContract]
         bool IsAlive();
     }
 
@@ -29,6 +37,11 @@ namespace DistributedTaskProcessing
         private readonly List<ClientTaskProgram> _programs = new List<ClientTaskProgram>();
 
 
+        public TaskClient()
+        {
+            
+        }
+
         public bool HasProgram(string programName)
         {
             var program = GetProgramByName(programName);
@@ -37,6 +50,8 @@ namespace DistributedTaskProcessing
 
         public void ReceiveProgram(Stream message)
         {
+            Logger.Trace("TaskClient - Receiving program...");
+
             var programMessage = DeserializeMessageStream<ProgramMessage>(message);
             var program = new ClientTaskProgram(programMessage.Name);
 
@@ -45,8 +60,12 @@ namespace DistributedTaskProcessing
 
         public void ExecuteWorkItem(Stream message)
         {
+            Logger.Trace("TaskClient - Receiving work item...");
+
             var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);
             var program = GetProgramByName(workItemMessage.ProgramName);
+
+            Logger.Trace("Executing work item " + workItemMessage.WorkItemId.ToString());
 
             var executionDomain = AppDomain.CreateDomain(workItemMessage.WorkItemId.ToString());
         }
