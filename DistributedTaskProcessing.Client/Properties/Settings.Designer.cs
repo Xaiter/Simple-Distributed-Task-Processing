@@ -40,5 +40,14 @@ namespace DistributedTaskProcessing.Client.Properties {
                 return ((string)(this["ServerTcpAddress"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ClientName {
+            get {
+                return ((string)(this["ClientName"]));
+            }
+        }
     }
 }

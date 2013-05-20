@@ -21,7 +21,7 @@ namespace DistributedTaskProcessing.Client
     {
         // Fields
         private readonly List<ClientTaskProgram> _programs = new List<ClientTaskProgram>();
-        private readonly Action<WorkItemMessage, ClientTaskProgram> _asyncHandle = null;
+        private readonly Func<WorkItemMessage, ClientTaskProgram, object> _asyncHandle = null;
         private bool _isBusy = false;
 
 
@@ -63,8 +63,8 @@ namespace DistributedTaskProcessing.Client
 
             AsyncCallback asyncCallback = (IAsyncResult result) => {
                 _isBusy = false;
-                _asyncHandle.EndInvoke(result);
-                TaskClientService.WorkItemComplete(this.ClientId.Value);
+                var returnValue = _asyncHandle.EndInvoke(result);
+                TaskClientService.WorkItemComplete(this.ClientId.Value, workItemMessage.WorkItemId, returnValue);
             };
 
             _asyncHandle.BeginInvoke(workItemMessage, program, asyncCallback, null);
@@ -90,14 +90,14 @@ namespace DistributedTaskProcessing.Client
 
 
         // Static Methods
-        private void ExecuteWorkItem(WorkItemMessage message, ClientTaskProgram program)
+        private object ExecuteWorkItem(WorkItemMessage message, ClientTaskProgram program)
         {
             _isBusy = true;
             Logger.Trace("Executing work item " + message.WorkItemId.ToString());
 
             var executionDomain = AppDomain.CreateDomain(message.WorkItemId.ToString());
             var crossDomainWorkerProxy = executionDomain.CreateInstanceAndUnwrap(message.WorkerAssemblyName, message.WorkerType) as ITaskWorker;
-            crossDomainWorkerProxy.DoWork(message);
+            return crossDomainWorkerProxy.DoWork(message);
         }
 
         private static void SaveProgram(ProgramMessage message)

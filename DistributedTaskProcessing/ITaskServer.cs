@@ -15,10 +15,10 @@ namespace DistributedTaskProcessing
     public interface ITaskServer
     {
         [OperationContract]
-        Guid RegisterClient(string endpointUrl);
+        Guid RegisterClient(string clientName, string endpointUrl);
 
         [OperationContract]
-        void WorkItemComplete(Guid clientId);
+        void WorkItemComplete(Guid clientId, Guid workItemId, object returnValue);
 
         [OperationContract]
         void UnregisterClient(Guid clientId);

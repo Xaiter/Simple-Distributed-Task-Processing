@@ -19,12 +19,14 @@ namespace DistributedTaskProcessing
         string Name { get; set; }
         FileData[] GetProgramFiles();
         WorkItemMessage[] GetWorkItemMessages();
+        void OnWorkItemProcessed(WorkItemMessage message, object returnValue);
     }
 
     public class ClientInformation
     {
         // Properties
         public Guid ClientId { get; set; }
+        public string Name { get; set; }
         public string EndpointLocation { get; set; }
         public DateTime LastMessageTime { get; set; }
         public bool IsAlive { get; set; }

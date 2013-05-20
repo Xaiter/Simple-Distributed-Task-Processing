@@ -61,10 +61,6 @@
       <Project>{79a004a7-a4f5-4ea9-80ea-84629ae6124a}</Project>
       <Name>DistributedTaskProcessing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MockObjects\MockObjects.csproj">
-      <Project>{cd7ddd79-41c0-4223-abc7-45de50827f66}</Project>
-      <Name>MockObjects</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

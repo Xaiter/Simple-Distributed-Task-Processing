@@ -57,7 +57,7 @@ namespace DistributedTaskProcessing.Client
             Logger.Trace("Registering client with server...");
 
             var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(Settings.Default.ServerTcpAddress);
-            var result = WcfUtilities.InvokeWcfProxyMethod((Func<string, Guid>)proxy.RegisterClient, Settings.Default.TcpAddress);
+            var result = WcfUtilities.InvokeWcfProxyMethod((Func<string, string, Guid>)proxy.RegisterClient, Settings.Default.TcpAddress, Settings.Default.ClientName);
 
             if (!result.Success)
             {
@@ -85,12 +85,12 @@ namespace DistributedTaskProcessing.Client
             return result.Success;
         }
 
-        public static bool WorkItemComplete(Guid clientId)
+        public static bool WorkItemComplete(Guid clientId, Guid workItemId, object returnValue)
         {
             Logger.Trace("Reporting assigned work for client Id " + clientId.ToString() + " is complete");
 
             var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(Settings.Default.ServerTcpAddress);
-            var result = WcfUtilities.InvokeWcfProxyMethod((Action<Guid>)proxy.WorkItemComplete, clientId);
+            var result = WcfUtilities.InvokeWcfProxyMethod((Action<Guid, Guid, object>)proxy.WorkItemComplete, clientId, workItemId, returnValue);
 
             if (result.Success)
                 Logger.Trace("Reported work item complete!");

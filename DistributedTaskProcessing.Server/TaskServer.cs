@@ -19,13 +19,14 @@ namespace DistributedTaskProcessing.Server
         private List<WorkItemMessage> _workItemsInProgress = new List<WorkItemMessage>();
         private List<ClientInformation> _clients = new List<ClientInformation>();
         private bool _clientUpdateReceived = false;
-
+        private ITaskProgram _currentTaskProgram = null;
 
 
         // Public Methods
         public void DoWork(ITaskProgram program)
         {
             var workItems = new Queue<WorkItemMessage>(program.GetWorkItemMessages());
+            _currentTaskProgram = program;
 
             while (_clients.Count == 0)
             {
@@ -58,7 +59,7 @@ namespace DistributedTaskProcessing.Server
             Logger.Trace("Work complete!");
         }
 
-        public Guid RegisterClient(string endpointUrl)
+        public Guid RegisterClient(string clientName, string endpointUrl)
         {
             var clientInfo = new ClientInformation();
             clientInfo.EndpointLocation = endpointUrl;
@@ -66,6 +67,7 @@ namespace DistributedTaskProcessing.Server
             clientInfo.ClientId = Guid.NewGuid();
             clientInfo.IsAlive = true;
             clientInfo.IsBusy = false;
+            clientInfo.Name = clientName;
 
             this._clients.Add(clientInfo);
 
@@ -89,6 +91,14 @@ namespace DistributedTaskProcessing.Server
             _clients.Remove(client);
         }
 
+        public void WorkItemComplete(Guid clientId, Guid workItemId, object returnValue)
+        {
+            var message = _workItemsInProgress.FirstOrDefault(i => i.WorkItemId == workItemId);
+            if (message == null)
+                return;
+
+            _currentTaskProgram.OnWorkItemProcessed(message, returnValue);
+        }
 
 
         // Private Methods

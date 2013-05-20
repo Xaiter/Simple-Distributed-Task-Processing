@@ -34,6 +34,12 @@ namespace MockObjects
                 }
             };
         }
+
+
+        public void OnWorkItemProcessed(WorkItemMessage message, object returnValue)
+        {
+            Logger.Trace("Woo, work item " + message.WorkItemId + " reported back to " + this.GetType().ToString());
+        }
     }
 
     [Serializable]
