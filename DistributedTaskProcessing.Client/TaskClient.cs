@@ -21,7 +21,7 @@ namespace DistributedTaskProcessing.Client
     {
         // Fields
         private readonly List<ClientTaskProgram> _programs = new List<ClientTaskProgram>();
-        private readonly Func<WorkItemMessage, ClientTaskProgram, object> _asyncHandle = null;
+        private readonly Func<WorkItemMessage, object> _asyncHandle = null;
         private bool _isBusy = false;
 
 
@@ -59,7 +59,6 @@ namespace DistributedTaskProcessing.Client
             Logger.Trace("TaskClient - Receiving work item...");
 
             var workItemMessage = DeserializeMessageStream<WorkItemMessage>(message);
-            var program = GetProgramByName(workItemMessage.ProgramName);
 
             AsyncCallback asyncCallback = (IAsyncResult result) => {
                 _isBusy = false;
@@ -67,7 +66,7 @@ namespace DistributedTaskProcessing.Client
                 TaskClientService.WorkItemComplete(this.ClientId.Value, workItemMessage.WorkItemId, returnValue);
             };
 
-            _asyncHandle.BeginInvoke(workItemMessage, program, asyncCallback, null);
+            _asyncHandle.BeginInvoke(workItemMessage, asyncCallback, null);
         }
 
         public bool IsAlive()
@@ -90,11 +89,23 @@ namespace DistributedTaskProcessing.Client
 
 
         // Static Methods
-        private object ExecuteWorkItem(WorkItemMessage message, ClientTaskProgram program)
+        private object ExecuteWorkItem(WorkItemMessage message)
         {
             _isBusy = true;
-            Logger.Trace("Executing work item " + message.WorkItemId.ToString());
+            Logger.Trace("Executing work item " + message.WorkItemId.ToString() + " for program " + message.ProgramName);
 
+            Logger.Trace("Checking for type " + message.WorkerType);
+            Type workerType = Type.GetType(message.WorkerType);
+            if (workerType == null)
+            {
+                var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                path = Path.Combine(path, message.ProgramName, message.WorkerAssemblyName + ".dll");
+
+                Logger.Trace("Not loaded, loading " + path);
+                Assembly.LoadFile(path);
+                Logger.Trace("Loaded " + message.WorkerAssemblyName);
+            }
+            
             var executionDomain = AppDomain.CreateDomain(message.WorkItemId.ToString());
             var crossDomainWorkerProxy = executionDomain.CreateInstanceAndUnwrap(message.WorkerAssemblyName, message.WorkerType) as ITaskWorker;
             return crossDomainWorkerProxy.DoWork(message);

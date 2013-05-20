@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.ServiceModel;
@@ -27,7 +28,6 @@ namespace DistributedTaskProcessing
             serializer.Serialize(ms, value);
 
             var data = ms.ToArray();
-            File.WriteAllBytes("C:\\test\\Serialize.xml", data);
             return data;
         }
 
@@ -35,7 +35,6 @@ namespace DistributedTaskProcessing
         {
             var serializer = new XmlSerializer(type);
             var ms = new MemoryStream(data);
-            File.WriteAllBytes("C:\\test\\Deserialize.xml", data);
             return serializer.Deserialize(ms);
         }
 
@@ -127,13 +126,19 @@ namespace DistributedTaskProcessing
             var binding = new NetTcpBinding();
             binding.TransferMode = TransferMode.Streamed;
             binding.MaxReceivedMessageSize = 134217728;
+            binding.SendTimeout = TimeSpan.FromSeconds(60);
+            binding.ReceiveTimeout = binding.SendTimeout;
             return binding;
         }
 
-        public static ServiceHost CreateServiceHost(string address, Type contractType, Type endpointInstanceType)
+        public static ServiceHost CreateServiceHost(string address, Type contractType, object endpointInstance)
         {
-            var host = new ServiceHost(endpointInstanceType, new Uri(address));
+            var host = new ServiceHost(endpointInstance, new Uri(address));
             host.AddServiceEndpoint(contractType, GetTcpBinding(), address);
+            
+            var debugBehavior = host.Description.Behaviors.First(i => i is ServiceDebugBehavior) as ServiceDebugBehavior;
+            debugBehavior.IncludeExceptionDetailInFaults = true;
+
             return host;
         }
 
@@ -153,13 +158,9 @@ namespace DistributedTaskProcessing
                     result.Success = true;
                     break;
                 }
-                catch (TimeoutException ex)
+                catch (TargetInvocationException ex)
                 {
-                    result.LastException = ex;
-                    Logger.Exception("Timeout invoking " + method.Method.Name + " on " + method.Target.GetType().ToString(), ex);
-                }
-                catch (CommunicationException ex)
-                {
+                    var innerException = ex.InnerException;
                     result.LastException = ex;
                     Logger.Exception("Exception invoking " + method.Method.Name + " on " + method.Target.GetType().ToString(), ex);
                 }
@@ -170,7 +171,7 @@ namespace DistributedTaskProcessing
                 }
 
             }
-            
+
             result.FailCount = retryCount;
 
             return result;
@@ -180,7 +181,7 @@ namespace DistributedTaskProcessing
     public class ProxyResult
     {
         public object ReturnValue { get; set; }
-        public int FailCount{ get; set; }
+        public int FailCount { get; set; }
         public Exception LastException { get; set; }
         public bool Success { get; set; }
     }

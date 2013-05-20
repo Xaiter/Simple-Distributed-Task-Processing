@@ -25,8 +25,7 @@ namespace DistributedTaskProcessing.Client
             CloseHost();
 
             _serverInstance = new TaskClient();
-            _serviceHost = new ServiceHost(_serverInstance, new Uri(Settings.Default.TcpAddress));
-            _serviceHost.AddServiceEndpoint(typeof(ITaskClient), WcfUtilities.GetTcpBinding(), Settings.Default.TcpAddress);
+            _serviceHost = WcfUtilities.CreateServiceHost(Settings.Default.TcpAddress, typeof(ITaskClient), _serverInstance);
             _serviceHost.Open();
             Logger.Trace("Opened Task Client Service");
 
@@ -57,7 +56,7 @@ namespace DistributedTaskProcessing.Client
             Logger.Trace("Registering client with server...");
 
             var proxy = WcfUtilities.GetServiceProxy<ITaskServer>(Settings.Default.ServerTcpAddress);
-            var result = WcfUtilities.InvokeWcfProxyMethod((Func<string, string, Guid>)proxy.RegisterClient, Settings.Default.TcpAddress, Settings.Default.ClientName);
+            var result = WcfUtilities.InvokeWcfProxyMethod((Func<string, string, Guid>)proxy.RegisterClient, Settings.Default.ClientName, Settings.Default.TcpAddress);
 
             if (!result.Success)
             {

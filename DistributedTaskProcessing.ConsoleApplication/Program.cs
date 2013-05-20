@@ -16,9 +16,10 @@ namespace DistributedTaskProcessing.ConsoleApplication
     {
         static void Main(string[] args)
         {
-            args = new string[] { "server" };
             if (args == null || args.Length != 1)
                 return;
+
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             Thread serviceThread = null;
 
@@ -32,34 +33,41 @@ namespace DistributedTaskProcessing.ConsoleApplication
 
             bool done = false;
             Console.WriteLine("Press [Esc] to exit, Press [Backspace] to clear");
-            
+
             while (!done)
             {
-                var key = Console.ReadKey(true).Key;
+                var key = Console.ReadKey(true);
+                if (key != null)
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.Backspace:
+                            Console.Clear();
+                            Console.WriteLine("Press [Esc] to exit, Press [Backspace] to clear");
+                            break;
 
-                switch(key)
-                {
-                    case ConsoleKey.Backspace:
-                        Console.Clear();
-                        Console.WriteLine("Press [Esc] to exit, Press [Backspace] to clear");
-                        break;
-
-                    case ConsoleKey.Escape:
-                        done = true;
-                        break;
-                }
+                        case ConsoleKey.Escape:
+                            Console.WriteLine("Exiting...");
+                            done = true;
+                            break;
+                    }
 
                 Thread.Sleep(1);
             }
 
+
             serviceThread.Abort();
+        }
+
+        static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Logger.Exception(null, e.ExceptionObject as Exception);
         }
 
         static void ServerMain()
         {
             var serverService = new TaskServerService();
             serverService.OpenHost();
-            
+
             var type = Type.GetType("MockObjects.MockProgram, MockObjects");
             var program = (ITaskProgram)Activator.CreateInstance(type);
             serverService.DoWork(program);

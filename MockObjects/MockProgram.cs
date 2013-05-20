@@ -20,7 +20,12 @@ namespace MockObjects
 
         public FileData[] GetProgramFiles()
         {
-            return new FileData[] { new FileData("MockObjects.dll"), new FileData("DistributedTaskProcessing.dll") };
+            return new FileData[] { 
+                new FileData("MockObjects.dll"), 
+                new FileData("DistributedTaskProcessing.dll"), 
+                new FileData("DistributedTaskProcessing.Client.dll"), 
+                new FileData("DistributedTaskProcessing.Server.dll") 
+            };
         }
 
         public WorkItemMessage[] GetWorkItemMessages()
@@ -38,7 +43,7 @@ namespace MockObjects
 
         public void OnWorkItemProcessed(WorkItemMessage message, object returnValue)
         {
-            Logger.Trace("Woo, work item " + message.WorkItemId + " reported back to " + this.GetType().ToString());
+            Logger.Trace("Work Item " + message.WorkItemId + " return value: " + returnValue);
         }
     }
 
@@ -48,9 +53,9 @@ namespace MockObjects
         public object DoWork(WorkItemMessage message)
         {
             Logger.Trace("MockWorker - DoWork");
-            Thread.Sleep(12000);
+            Thread.Sleep(3000);
             Logger.Trace("MockWorker - DoWork complete!");
-            return null;
+            return Environment.MachineName;
         }
     }
 }
